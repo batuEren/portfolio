@@ -1,0 +1,140 @@
+---
+title: N-Body Gravity Simulation
+description: Performance-oriented N-body gravity simulator with multiple force solvers, numerical integrators, and real-time OpenGL visualization.
+tag: project, simulation
+author: You
+---
+
+# N-Body Gravity Simulation
+
+An interactive **N-body gravity simulation** built to explore the trade-offs between **accuracy, stability, and performance** in gravitational systems.
+
+The simulation runs **2D physics** (positions and velocities) while rendering the system in **3D**, with real-time controls for algorithms, integrators, and timestep behavior.
+
+![Example](/images/nbody.gif)
+---
+
+**Author:** Batu Eren  
+
+**Tech:** C++, OpenGL, ImGui, numerical simulation
+
+**Github:** [github.com/batuEren/NBodyProblem](https://github.com/batuEren/NBodyProblem)
+
+---
+
+## Motivation
+
+This project started as an exploration of:
+- how different **force calculation algorithms** scale,
+- how **numerical integrators** affect stability and energy conservation,
+- and how to structure a simulation engine that allows **hot-swapping algorithms at runtime**.
+
+The goal was not just visual correctness, but **numerical and architectural clarity**.
+
+---
+
+## Core features
+
+### Physics
+
+- **Physically meaningful units**
+  - Distance: Astronomical Units (AU)
+  - Mass: Solar masses (M☉)
+  - Time: Years
+  - Gravitational constant:  
+    `G = 39.478 AU³ / (M☉ · year²)`
+
+- **Force solvers**
+  - **Direct pairwise (O(N²))**  
+    Used as a correctness baseline.
+  - **Barnes-Hut (O(N log N))**  
+    Tree-based spatial approximation with configurable accuracy.
+  - **Fast Multipole Method (planned)**  
+    Architecture prepared, not yet implemented.
+
+- **Numerical integration**
+  - Euler integrator (simple, unstable at scale)
+  - Velocity Verlet integrator (significantly better energy behavior)
+
+- **Stable time stepping**
+  - Internal **physics sub-stepping** decoupled from rendering
+  - Default timestep on the order of `1e-4` years
+
+---
+
+## Energy conservation
+
+The engine continuously tracks **total system energy** and reports **energy drift** over time.
+
+This made it easy to:
+- compare Euler vs Verlet behavior,
+- tune timestep size,
+- validate Barnes-Hut approximation parameters.
+
+Energy drift was a primary debugging and validation signal during development.
+
+---
+
+## Rendering & interaction
+
+- **Modern OpenGL (3.3 core)** using GLAD + GLFW
+- **Perspective camera** with spherical coordinates
+- **Mass objects rendered as spheres**
+  - radius and color scale with mass
+- **Gravitational field visualization**
+  - grid-based sampling of field strength
+- **ImGui UI**
+  - algorithm switching at runtime
+  - simulation speed control
+  - integrator selection
+
+The rendering layer is deliberately kept separate from the physics engine.
+
+---
+
+## Example system
+
+The default scene models a simplified solar system:
+- Sun, Earth, Mars, Jupiter, Ganymede, and an asteroid
+- Realistic mass ratios
+- Circular-orbit initial velocities
+
+This makes deviations (instability, drift, approximation error) immediately visible.
+
+---
+
+## Architecture overview
+
+The project is structured around **clear separation of concerns**:
+
+- **PhysicsEngine**  
+  Owns time stepping, sub-stepping, and energy diagnostics.
+- **Force calculators**  
+  Pluggable solvers (brute force, Barnes-Hut).
+- **Integrators**  
+  Swap integration schemes without touching force code.
+- **Renderer**  
+  Stateless with respect to physics, purely visual.
+
+This made experimentation with algorithms fast and low-risk.
+
+---
+
+## Future directions
+
+- Fast Multipole Method (O(N))
+- Larger-scale galaxy simulations
+- Scene presets and save/load
+- Built-in profiling overlay
+- Camera mode switching (orthographic / perspective)
+
+---
+
+## Takeaways
+
+This project significantly deepened my understanding of:
+- numerical stability in physical simulations,
+- algorithmic scaling trade-offs,
+- clean separation between simulation, integration, and rendering layers.
+
+It also reinforced how quickly "working" simulations can become unstable without careful timestep and integrator choices.
